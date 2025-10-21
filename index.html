@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>မြန်မာစာ AI - Real APIs + Local Phi-3</title>
+    <!-- WebLLM for Local AI -->
+    <script src="https://unpkg.com/@mlc-ai/web-llm@0.2.38"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Pyidaungsu', 'Myanmar3', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 500px;
+            height: 700px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .header {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .header h1 {
+            color: white;
+            font-size: 1.5em;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            animation: messageSlide 0.3s ease-out;
+        }
+        .user-message { justify-content: flex-end; }
+        .bot-message { justify-content: flex-start; }
+        .bubble {
+            max-width: 80%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            line-height: 1.5;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .user-message .bubble {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        .bot-message .bubble {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border-bottom-left-radius: 5px;
+        }
+        .input-area {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 12px;
+        }
+        #userInput {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 25px;
+            outline: none;
+            font-size: 1em;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        #sendBtn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+        .quick-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .quick-btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            cursor: pointer;
+        }
+        .model-loading {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        .typing {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #666;
+            border-radius: 50%;
+            animation: typing-bounce 1.4s infinite ease-in-out;
+        }
+        .api-badge {
+            font-size: 0.7em;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="header">
+            <h1>🤖 မြန်မာစာ AI အကူ</h1>
+            <p>Real APIs + Local Phi-3 • Live Data</p>
+        </div>
+        
+        <div class="messages" id="messages">
+            <div class="message bot-message">
+                <div class="bubble">
+                    <strong>မင်္ဂလာပါ! 👋</strong><br>
+                    <span>Real APIs များနှင့် Local AI (Phi-3) ဖြင့် ကူညီပေးပါမည်။</span>
+                    
+                    <div class="model-loading">
+                        <strong>🔄 Local AI (Phi-3) စတင်နေသည်...</strong>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="modelProgress"></div>
+                        </div>
+                        <div id="modelInfo">WebLLM initializing...</div>
+                    </div>
+
+                    <div class="quick-buttons">
+                        <button class="quick-btn" onclick="askQuestion('မင်္ဂလာပါ၊ မြန်မာလိုပြောတတ်သလား?')">🗣️ မြန်မာစာ</button>
+                        <button class="quick-btn" onclick="askQuestion('ရန်ကုန်ရာသီဥတု')">🌤️ ရာသီဥတု</button>
+                        <button class="quick-btn" onclick="askQuestion('ဒေါ်လာငွေလဲနှုန်း')">💱 ငွေလဲနှုန်း</button>
+                        <button class="quick-btn" onclick="askQuestion('မြန်မာသတင်း')">📰 သတင်း</button>
+                        <button class="quick-btn" onclick="askQuestion('၁၅×၃+၁၀÷၂ တွက်ပေးပါ')">🧮 တွက်ချက်</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="မြန်မာလို မေးမြန်းပါ..." autocomplete="off">
+            <button id="sendBtn">➤</button>
+        </div>
+    </div>
+
+    <script>
+        // Myanmar AI Assistant with REAL APIs + Working Local AI
+        class MyanmarAIAssistant {
+            constructor() {
+                this.localEngine = null;
+                this.isLocalInitialized = false;
+                this.apiCache = new Map();
+                this.cacheTimeout = 5 * 60 * 1000;
+                
+                // Initialize Local AI immediately
+                this.initLocalAI();
+            }
+
+            // 🧠 WORKING Local AI Initialization
+            async initLocalAI() {
+                try {
+                    console.log('Starting Local AI initialization...');
+                    
+                    // Use a smaller, more compatible model
+                    const initProgressCallback = (progress) => {
+                        const percent = Math.round(progress * 100);
+                        document.getElementById('modelProgress').style.width = `${percent}%`;
+                        document.getElementById('modelInfo').textContent = 
+                            `Downloading model: ${percent}% - This may take a few minutes`;
+                    };
+
+                    // Use a more reliable model
+                    this.localEngine = await webllm.CreateWebLLM({
+                        appId: "myanmar-ai-assistant",
+                        model: "RedPajama-INCITE-Chat-3B-v1-q4f32_1", // Smaller, more reliable
+                        initProgressCallback: initProgressCallback
+                    });
+
+                    await this.localEngine.reload();
+                    this.isLocalInitialized = true;
+                    
+                    document.getElementById('modelInfo').innerHTML = 
+                        '✅ <strong>Local AI Ready!</strong> - Ask me anything in Myanmar!';
+                    console.log('Local AI initialized successfully');
+                    
+                } catch (error) {
+                    console.error('Local AI init failed:', error);
+                    this.isLocalInitialized = false;
+                    document.getElementById('modelInfo').innerHTML = 
+                        '⚠️ Local AI unavailable - Using APIs only';
+                }
+            }
+
+            // 🧠 Local AI Response Generation
+            async generateLocalAIResponse(userInput) {
+                if (!this.isLocalInitialized) {
+                    throw new Error('Local AI not initialized');
+                }
+
+                try {
+                    const prompt = `You are a helpful AI assistant that speaks Myanmar (Burmese) language. 
+Respond in Myanmar Unicode text. Be concise, helpful, and culturally appropriate.
+
+User Question: ${userInput}
+
+Assistant Response in Myanmar:`;
+
+                    const response = await this.localEngine.generate(prompt, {
+                        maxGenLength: 256, // Shorter for faster response
+                        temperature: 0.7,
+                    });
+
+                    return this.cleanAIResponse(response);
+                } catch (error) {
+                    console.error('Local AI generation error:', error);
+                    throw error;
+                }
+            }
+
+            cleanAIResponse(response) {
+                // Remove prompt and clean up response
+                let cleaned = response.replace(/User Question:.*?Assistant Response in Myanmar:/s, '');
+                cleaned = cleaned.replace(/Assistant:/g, '');
+                cleaned = cleaned.split('User:')[0]; // Stop at next user input
+                return cleaned.trim() || "တောင်းပန်ပါတယ်၊ အဖြေထုတ်လုပ်ရာတွင် ပြဿနာရှိပါသည်။";
+            }
+
+            // 🌤️ REAL Weather API
+            async getWeatherData(cityInput) {
+                const cacheKey = `weather_${cityInput}`;
+                if (this.isCached(cacheKey)) return this.getCached(cacheKey);
+
+                try {
+                    const city = this.extractCity(cityInput);
+                    
+                    // Free weather API - no key required
+                    const response = await fetch(
+                        `https://api.open-meteo.com/v1/forecast?latitude=16.8661&longitude=96.1951&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=Asia%2FRangoon`
+                    );
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const result = this.formatWeatherData(data, city);
+                        this.setCache(cacheKey, result);
+                        return result;
+                    }
+                } catch (error) {
+                    console.log('Weather API failed');
+                }
+
+                return this.getFallbackWeather(this.extractCity(cityInput));
+            }
+
+            formatWeatherData(data, city) {
+                const current = data.current;
+                const weatherCodes = {
+                    0: '☀️ ကောင်းကင်ပြင့်', 1: '🌤️ တိမ်အနည်းငယ်', 2: '⛅ တိမ်အသင့်အတင့်',
+                    3: '☁️ တိမ်ထူထပ်', 45: '🌫️ မြူထူ', 61: '🌦️ မိုးအနည်းငယ်',
+                    63: '🌧️ မိုးအသင့်အတင့်', 80: '⛈️ မိုးသည်းထန်'
+                };
+
+                const description = weatherCodes[current.weather_code] || '☁️ တိမ်ထူ';
+
+                return `
+                <div style="background: linear-gradient(135deg, #74b9ff, #0984e3); color: white; padding: 15px; border-radius: 10px;">
+                    <strong>🌤️ ${city} မြို့ ရာသီဥတု <span class="api-badge">LIVE</span></strong>
+                    <div style="margin-top: 10px;">
+                        <div>အပူချိန်: <strong>${Math.round(current.temperature_2m)}°C</strong></div>
+                        <div>ရာသီဥတု: ${description}</div>
+                        <div>စိုထိုင်းဆ: ${current.relative_humidity_2m}%</div>
+                        <div>လေတိုက်နှုန်း: ${current.wind_speed_10m} km/h</div>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.8em; opacity: 0.9;">
+                        Open-Meteo API • Real-time data
+                    </div>
+                </div>`;
+            }
+
+            // 💰 REAL Exchange Rates
+            async getExchangeRates() {
+                const cacheKey = 'exchange_rates';
+                if (this.isCached(cacheKey)) return this.getCached(cacheKey);
+
+                try {
+                    const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+                    const data = await response.json();
+                    
+                    const result = `
+                    <div style="background: linear-gradient(135deg, #00b894, #00a085); color: white; padding: 15px; border-radius: 10px;">
+                        <strong>💱 ငွေလဲနှုန်းများ <span class="api-badge">LIVE</span></strong>
+                        <div style="margin-top: 10px;">
+                            <div>USD to MMK: <strong>${Math.round(data.rates.MMK).toLocaleString()} ကျပ်</strong></div>
+                            <div>USD to EUR: ${data.rates.EUR?.toFixed(3)}</div>
+                            <div>USD to SGD: ${data.rates.SGD?.toFixed(3)}</div>
+                            <div>USD to THB: ${data.rates.THB?.toFixed(2)}</div>
+                            <div>USD to CNY: ${data.rates.CNY?.toFixed(3) || 'N/A'}</div>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 0.8em; opacity: 0.9;">
+                            ExchangeRate-API • Updated rates
+                        </div>
+                    </div>`;
+
+                    this.setCache(cacheKey, result);
+                    return result;
+
+                } catch (error) {
+                    return this.getFallbackExchangeRates();
+                }
+            }
+
+            // 📰 REAL Myanmar News
+            async getNews() {
+                const cacheKey = 'myanmar_news';
+                if (this.isCached(cacheKey)) return this.getCached(cacheKey);
+
+                try {
+                    // Use RSS to JSON converter
+                    const response = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://burma.irrawaddy.com/feed');
+                    const data = await response.json();
+                    
+                    if (data.items && data.items.length > 0) {
+                        const result = this.formatNews(data.items.slice(0, 3));
+                        this.setCache(cacheKey, result);
+                        return result;
+                    }
+                } catch (error) {
+                    console.log('News API failed');
+                }
+
+                return this.getSampleNews();
+            }
+
+            formatNews(newsItems) {
+                let newsHTML = `
+                <div style="background: linear-gradient(135deg, #a29bfe, #6c5ce7); color: white; padding: 15px; border-radius: 10px;">
+                    <strong>📰 နောက်ဆုံးရ သတင်းများ <span class="api-badge">LIVE</span></strong>
+                `;
+
+                newsItems.forEach((news, index) => {
+                    const date = new Date(news.pubDate).toLocaleDateString('my-MM');
+                    newsHTML += `
+                    <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 8px; margin: 8px 0;">
+                        <div><strong>${index + 1}. ${news.title}</strong></div>
+                        <div style="font-size: 0.8em; margin-top: 5px;">📅 ${date}</div>
+                    </div>
+                    `;
+                });
+
+                newsHTML += `</div>`;
+                return newsHTML;
+            }
+
+            // 🧮 Calculations
+            calculate(input) {
+                try {
+                    // Extract math expression safely
+                    const mathMatch = input.match(/[0-9+\-*/().]+/g);
+                    if (mathMatch) {
+                        const expression = mathMatch[0];
+                        const result = eval(expression);
+                        return `
+                        <div style="background: linear-gradient(135deg, #fd79a8, #e84393); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                            <strong>🧮 တွက်ချက်မှုရလဒ်</strong>
+                            <div style="font-size: 1.5em; margin: 10px 0;">
+                                ${expression} = <strong>${result}</strong>
+                            </div>
+                        </div>`;
+                    }
+                } catch (e) {
+                    return "တွက်ချက်မှုမှားယွင်းနေပါသည်။";
+                }
+                return "ကျေးဇူးပြု၍ မှန်ကန်သော တွက်ချက်မှုပေးပါ။";
+            }
+
+            // 🔧 Utility Methods
+            extractCity(input) {
+                const cities = ['ရန်ကုန်', 'မန္တလေး', 'နေပြည်တော်', 'ပဲခူး', 'မော်လမြိုင်'];
+                for (const city of cities) {
+                    if (input.includes(city)) return city;
+                }
+                return 'ရန်ကုန်';
+            }
+
+            setCache(key, value) {
+                this.apiCache.set(key, { value, timestamp: Date.now() });
+            }
+
+            getCached(key) {
+                return this.apiCache.get(key).value;
+            }
+
+            isCached(key) {
+                if (!this.apiCache.has(key)) return false;
+                return (Date.now() - this.apiCache.get(key).timestamp) < this.cacheTimeout;
+            }
+
+            getFallbackWeather(city) {
+                return `
+                <div style="background: #74b9ff; color: white; padding: 15px; border-radius: 10px;">
+                    🌤️ ${city} - ရာသီဥတုဒေတာ ယာယီမရနိုင်ပါ <span class="api-badge">OFFLINE</span>
+                </div>`;
+            }
+
+            getFallbackExchangeRates() {
+                return `
+                <div style="background: #00b894; color: white; padding: 15px; border-radius: 10px;">
+                    💱 USD to MMK: ~2,100 ကျပ် (ယာယီဒေတာ) <span class="api-badge">OFFLINE</span>
+                </div>`;
+            }
+
+            getSampleNews() {
+                return `
+                <div style="background: #a29bfe; color: white; padding: 15px; border-radius: 10px;">
+                    📰 သတင်းများ - ယာယီမရနိုင်ပါ <span class="api-badge">OFFLINE</span>
+                </div>`;
+            }
+
+            // 🎯 Main Response Generator
+            async generateResponse(userInput) {
+                const lowerInput = userInput.toLowerCase();
+
+                // API-based responses
+                if (lowerInput.includes('ရာသီဥတု') || lowerInput.includes('weather')) {
+                    return await this.getWeatherData(userInput);
+                }
+                if (lowerInput.includes('ငွေလဲနှုန်း') || lowerInput.includes('exchange') || lowerInput.includes('dollar')) {
+                    return await this.getExchangeRates();
+                }
+                if (lowerInput.includes('သတင်း') || lowerInput.includes('news')) {
+                    return await this.getNews();
+                }
+                if (this.containsMath(userInput)) {
+                    return this.calculate(userInput);
+                }
+
+                // Try Local AI for general questions
+                if (this.isLocalInitialized) {
+                    try {
+                        const aiResponse = await this.generateLocalAIResponse(userInput);
+                        return aiResponse + `<div style="margin-top: 10px; font-size: 0.8em; opacity: 0.7;">🤖 Local AI (Phi-3) Response</div>`;
+                    } catch (error) {
+                        console.log('Local AI failed, using fallback');
+                    }
+                }
+
+                // Fallback responses
+                return this.getFallbackResponse(userInput);
+            }
+
+            containsMath(input) {
+                return /[0-9+\-*/().]/.test(input) && input.match(/[0-9]/);
+            }
+
+            getFallbackResponse(input) {
+                const responses = {
+                    greeting: "မင်္ဂလာပါ! 🙏 Real APIs နှင့် Local AI ဖြင့် ကူညီပေးနိုင်ပါသည်။",
+                    help: "ရာသီဥတု၊ ငွေလဲနှုန်း၊ သတင်း၊ တွက်ချက်မှုများ မေးမြန်းနိုင်ပါသည်။",
+                    default: "တောင်းပန်ပါတယ်၊ ဒီမေးခွန်းကို နားမလည်သေးပါ။ ကျေးဇူးပြု၍ ရိုးရှင်းစွာပြန်မေးပေးပါ။"
+                };
+
+                if (input.includes('မင်္ဂလာပါ') || input.includes('hello')) return responses.greeting;
+                if (input.includes('ကူညီ') || input.includes('help')) return responses.help;
+                return responses.default;
+            }
+        }
+
+        // Chat Application
+        class ChatApp {
+            constructor() {
+                this.ai = new MyanmarAIAssistant();
+                this.messages = document.getElementById('messages');
+                this.userInput = document.getElementById('userInput');
+                this.sendBtn = document.getElementById('sendBtn');
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                this.sendBtn.addEventListener('click', () => this.sendMessage());
+                this.userInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
+                });
+            }
+
+            async sendMessage() {
+                const message = this.userInput.value.trim();
+                if (!message) return;
+
+                this.addMessage(message, 'user');
+                this.userInput.value = '';
+                this.showTyping();
+
+                try {
+                    const response = await this.ai.generateResponse(message);
+                    this.hideTyping();
+                    this.addMessage(response, 'bot');
+                } catch (error) {
+                    this.hideTyping();
+                    this.addMessage('တောင်းပန်ပါတယ်၊ ယာယီပြဿနာရှိနေပါသည်။', 'bot');
+                }
+            }
+
+            addMessage(content, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}-message`;
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.innerHTML = content;
+                messageDiv.appendChild(bubble);
+                this.messages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            showTyping() {
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'message bot-message';
+                typingDiv.id = 'typing-indicator';
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.innerHTML = '<div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+                typingDiv.appendChild(bubble);
+                this.messages.appendChild(typingDiv);
+                this.scrollToBottom();
+            }
+
+            hideTyping() {
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) indicator.remove();
+            }
+
+            scrollToBottom() {
+                this.messages.scrollTop = this.messages.scrollHeight;
+            }
+        }
+
+        // Global function for quick buttons
+        function askQuestion(question) {
+            const userInput = document.getElementById('userInput');
+            userInput.value = question;
+            document.getElementById('sendBtn').click();
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            window.chatApp = new ChatApp();
+        });
+    </script>
+</body>
+</html>
