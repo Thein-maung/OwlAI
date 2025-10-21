@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>မြန်မာစာ AI - Local AI + APIs</title>
-    <!-- WebLLM CDN -->
+    <title>မြန်မာစာ AI - Fixed Local AI</title>
+    <!-- WebLLM from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.38/dist/web-llm.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -135,16 +135,17 @@
             transition: width 0.3s ease;
             width: 0%;
         }
-        .api-badge {
+        .ai-badge {
             font-size: 0.7em;
-            background: rgba(0, 0, 0, 0.1);
+            background: #00b894;
+            color: white;
             padding: 2px 8px;
             border-radius: 10px;
             margin-left: 5px;
         }
-        .ai-badge {
+        .api-badge {
             font-size: 0.7em;
-            background: #00b894;
+            background: #0984e3;
             color: white;
             padding: 2px 8px;
             border-radius: 10px;
@@ -156,7 +157,7 @@
     <div class="chat-container">
         <div class="header">
             <h1>🤖 မြန်မာစာ AI အကူ</h1>
-            <p>Local AI + Real APIs • Full Features</p>
+            <p>Fixed Local AI • Real APIs</p>
         </div>
         
         <div class="messages" id="messages">
@@ -170,7 +171,7 @@
                         <div class="progress-bar">
                             <div class="progress-fill" id="modelProgress"></div>
                         </div>
-                        <div id="modelInfo">WebLLM initializing...</div>
+                        <div id="modelInfo">WebLLM loading... This may take 2-3 minutes</div>
                     </div>
 
                     <div class="quick-buttons">
@@ -191,54 +192,81 @@
     </div>
 
     <script>
-        // Myanmar AI Assistant with Local AI + APIs
+        // Myanmar AI Assistant - Fixed WebLLM Version
         class MyanmarAIAssistant {
             constructor() {
                 this.localEngine = null;
                 this.isLocalInitialized = false;
+                this.isInitializing = false;
                 this.apiCache = new Map();
                 this.cacheTimeout = 10 * 60 * 1000;
                 
-                // Initialize Local AI
+                // Initialize Local AI with better error handling
                 this.initLocalAI();
             }
 
-            // 🧠 Vercel-Compatible Local AI Initialization
+            // 🧠 FIXED WebLLM Initialization
             async initLocalAI() {
+                if (this.isInitializing) return;
+                
+                this.isInitializing = true;
+                
                 try {
-                    console.log('Starting Local AI initialization...');
+                    console.log('🔄 Starting WebLLM initialization...');
                     
-                    // Use a very small model that works on Vercel
+                    // Check if WebLLM is available
+                    if (typeof webllm === 'undefined') {
+                        throw new Error('WebLLM library not loaded');
+                    }
+
                     const initProgressCallback = (progress) => {
                         const percent = Math.round(progress * 100);
                         document.getElementById('modelProgress').style.width = `${percent}%`;
-                        document.getElementById('modelInfo').textContent = 
-                            `Downloading AI model: ${percent}% - Please wait...`;
+                        
+                        if (percent < 100) {
+                            document.getElementById('modelInfo').innerHTML = 
+                                `Downloading AI model: ${percent}% - Please wait...<br>
+                                 <small>First time may take 2-3 minutes</small>`;
+                        } else {
+                            document.getElementById('modelInfo').innerHTML = 
+                                `Initializing model... Almost done!`;
+                        }
                     };
 
-                    // Use tiny model for Vercel compatibility
+                    // Use the smallest available model
                     this.localEngine = await webllm.CreateWebLLM({
-                        appId: "myanmar-ai-v2",
-                        model: "TinyLlama-1.1B-Chat-v0.4-q4f16_1-1k", // Very small model
+                        appId: "myanmar-ai-assistant",
+                        model: "TinyLlama-1.1B-Chat-v0.4-q4f16_1-1k", // Smallest model
                         initProgressCallback: initProgressCallback
                     });
 
+                    console.log('✅ WebLLM engine created, now reloading...');
+                    
                     await this.localEngine.reload();
                     this.isLocalInitialized = true;
                     
                     document.getElementById('modelInfo').innerHTML = 
-                        '✅ <strong>Local AI Ready!</strong> - TinyLlama model loaded';
-                    console.log('Local AI initialized successfully');
+                        '✅ <strong>Local AI Ready!</strong> - TinyLlama model loaded successfully';
+                    console.log('🎉 Local AI initialized successfully');
                     
                 } catch (error) {
-                    console.error('Local AI init failed:', error);
+                    console.error('❌ Local AI initialization failed:', error);
                     this.isLocalInitialized = false;
-                    document.getElementById('modelInfo').innerHTML = 
-                        '⚠️ Local AI Failed - Using APIs and rule-based responses';
+                    
+                    let errorMessage = '⚠️ Local AI Failed - Using APIs only';
+                    if (error.message.includes('WebLLM library not loaded')) {
+                        errorMessage = '⚠️ WebLLM library load failed - Check internet connection';
+                    } else if (error.message.includes('fetch')) {
+                        errorMessage = '⚠️ Model download failed - Check internet connection';
+                    }
+                    
+                    document.getElementById('modelInfo').innerHTML = errorMessage;
+                } finally {
+                    this.isInitializing = false;
                 }
             }
 
-            // 🧠 Local AI Response Generation
+            // 🧠 Local AI Response Generation with Timeout
             async generateLocalAIResponse(userInput) {
                 if (!this.isLocalInitialized) {
                     throw new Error('Local AI not ready');
@@ -246,15 +274,22 @@
 
                 try {
                     const prompt = `You are a helpful AI assistant that speaks Myanmar (Burmese) language. 
-Respond in Myanmar Unicode text. Keep responses short and helpful.
+Respond in Myanmar Unicode text. Keep responses short and helpful (2-3 sentences).
 
-User: ${userInput}
-Assistant:`;
+User Question: ${userInput}
 
-                    const response = await this.localEngine.generate(prompt, {
-                        maxGenLength: 200, // Very short for speed
-                        temperature: 0.7,
-                    });
+Assistant Response in Myanmar:`;
+
+                    // Add timeout to prevent hanging
+                    const response = await Promise.race([
+                        this.localEngine.generate(prompt, {
+                            maxGenLength: 150, // Very short for speed
+                            temperature: 0.7,
+                        }),
+                        new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('Timeout')), 10000)
+                        )
+                    ]);
 
                     return this.cleanAIResponse(response);
                 } catch (error) {
@@ -264,12 +299,15 @@ Assistant:`;
             }
 
             cleanAIResponse(response) {
-                // Clean up the response
-                let cleaned = response.replace(/User:.*?Assistant:/gs, '');
-                cleaned = cleaned.split('User:')[0];
-                cleaned = cleaned.trim();
+                if (!response) return "တောင်းပန်ပါတယ်၊ အဖြေထုတ်လုပ်ရာတွင် ပြဿနာရှိပါသည်။";
                 
-                if (!cleaned || cleaned.length < 10) {
+                let cleaned = response
+                    .replace(/User Question:.*?Assistant Response in Myanmar:/gs, '')
+                    .replace(/Assistant:/g, '')
+                    .split('User:')[0]
+                    .trim();
+
+                if (cleaned.length < 10) {
                     return "တောင်းပန်ပါတယ်၊ အဖြေထုတ်လုပ်ရာတွင် ပြဿနာရှိပါသည်။";
                 }
                 
@@ -284,9 +322,9 @@ Assistant:`;
                 try {
                     const city = this.extractCity(cityInput);
                     
-                    // Free weather API
+                    // Using reliable weather API
                     const response = await fetch(
-                        `https://api.weatherapi.com/v1/current.json?key=7f6a83461a284f8b8f1180502241212&q=Yangon&lang=my`
+                        `https://api.weatherapi.com/v1/current.json?key=7f6a83461a284f8b8f1180502241212&q=Yangon`
                     );
                     
                     if (response.ok) {
@@ -396,7 +434,8 @@ Assistant:`;
             getChinaNews() {
                 const chinaNews = [
                     { title: "တရုတ်နိုင်ငံ၏ စီးပွားရေးတိုးတက်မှု ၅.၂% ရှိခဲ့", date: "ယနေ့" },
-                    { title: "တရုတ်-မြန်မာ ကုန်သွယ်ရေး ဆက်လက်တိုးတက်လာ", date: "ယနေ့" }
+                    { title: "တရုတ်-မြန်မာ ကုန်သွယ်ရေး ဆက်လက်တိုးတက်လာ", date: "ယနေ့" },
+                    { title: "တရုတ်နည်းပညာကုမ္ပဏီများ AI နယ်ပယ်တွင် ရင်းနှီးမြှုပ်နှံ", date: "ယနေ့" }
                 ];
 
                 let chinaHTML = '';
@@ -498,18 +537,19 @@ Assistant:`;
                     return this.calculate(userInput);
                 }
 
-        // Try Local AI for general questions
+                // Try Local AI for general questions
                 if (this.isLocalInitialized) {
                     try {
                         const aiResponse = await this.generateLocalAIResponse(userInput);
-                        return aiResponse + `<div style="margin-top: 10px; font-size: 0.8em; opacity: 0.7;"><span class="ai-badge">Local AI</span> TinyLlama Model</div>`;
+                        return aiResponse + `<div style="margin-top: 10px; font-size: 0.8em; opacity: 0.7;"><span class="ai-badge">Local AI</span> Powered by TinyLlama</div>`;
                     } catch (error) {
-                        console.log('Local AI failed, using fallback');
+                        console.log('Local AI failed, using rule-based response');
+                        return this.getRuleBasedResponse(userInput) + `<div style="margin-top: 10px; font-size: 0.8em; opacity: 0.7;"><span class="api-badge">Rule-Based</span> Local AI temporarily unavailable</div>`;
                     }
                 }
 
                 // Fallback to rule-based responses
-                return this.getRuleBasedResponse(userInput);
+                return this.getRuleBasedResponse(userInput) + `<div style="margin-top: 10px; font-size: 0.8em; opacity: 0.7;"><span class="api-badge">Rule-Based</span> Local AI still loading...</div>`;
             }
 
             containsMath(input) {
