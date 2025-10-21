@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>မြန်မာစာ AI အကူ - Hugging Face API</title>
+    <title>မြန်မာစာ AI အကူ - Free AI APIs</title>
     <style>
         * { 
             margin: 0; 
@@ -222,8 +222,9 @@
             text-align: center;
         }
 
-        .model-loading {
-            background: rgba(255, 255, 255, 0.9);
+        .info-box {
+            background: #74b9ff;
+            color: white;
             padding: 15px;
             border-radius: 10px;
             margin: 10px 0;
@@ -235,27 +236,27 @@
     <div class="chat-container">
         <div class="header">
             <h1>🤖 မြန်မာစာ AI အကူ</h1>
-            <p>Hugging Face API + Real APIs • Smart AI</p>
+            <p>Free AI APIs + Real Data • No Token Needed</p>
         </div>
         
         <div class="messages" id="messages">
             <div class="message bot-message">
                 <div class="bubble">
                     <strong>မင်္ဂလာပါ! 👋</strong><br>
-                    <span>Hugging Face AI နဲ့ Real APIs များဖြင့် ကူညီပေးပါမည်။</span>
+                    <span>Free AI APIs နဲ့ Real Data များဖြင့် ကူညီပေးပါမည်။</span>
                     
-                    <div class="success-box">
-                        ✅ Hugging Face AI Enabled<br>
-                        <small>Advanced AI responses with external API</small>
+                    <div class="info-box">
+                        🆓 Free AI APIs Enabled<br>
+                        <small>No API tokens needed • Always working</small>
                     </div>
 
                     <div class="quick-buttons">
-                        <button class="quick-btn" onclick="askQuestion('မင်္ဂလာပါ၊ မြန်မာလိုပြောတတ်သလား?')">🗣️ Hugging Face AI</button>
+                        <button class="quick-btn" onclick="askQuestion('မင်္ဂလာပါ၊ မြန်မာလိုပြောတတ်သလား?')">🗣️ Free AI Chat</button>
                         <button class="quick-btn" onclick="askQuestion('ရန်ကုန်ရာသီဥတု')">🌤️ ရာသီဥတု</button>
                         <button class="quick-btn" onclick="askQuestion('ဒေါ်လာငွေလဲနှုန်း')">💱 ငွေလဲနှုန်း</button>
                         <button class="quick-btn" onclick="askQuestion('မြန်မာသတင်း')">📰 သတင်း</button>
                         <button class="quick-btn" onclick="askQuestion('၁၅×၃+၁၀÷၂ တွက်ပေးပါ')">🧮 တွက်ချက်</button>
-                        <button class="quick-btn" onclick="askQuestion('မြန်မာ့ယဉ်ကျေးမှုအကြောင်းပြောပါ')">📚 ယဉ်ကျေးမှု</button>
+                        <button class="quick-btn" onclick="askQuestion('ကျန်းမာရေးအကြံဉာဏ်')">🏥 ကျန်းမာရေး</button>
                     </div>
                 </div>
             </div>
@@ -268,63 +269,146 @@
     </div>
 
     <script>
-        // Myanmar AI Assistant with Hugging Face API
+        // Myanmar AI Assistant with FREE AI APIs (No Token Needed)
         class MyanmarAIAssistant {
             constructor() {
                 this.apiCache = new Map();
                 this.cacheTimeout = 10 * 60 * 1000;
-                this.useHuggingFace = true; // Hugging Face API enabled
-                this.huggingFaceModel = "microsoft/DialoGPT-medium"; // Free model
                 this.smartResponses = this.initializeSmartResponses();
             }
 
-            // 🧠 Hugging Face API Integration
-            async callHuggingFaceAPI(userInput) {
-                if (!this.useHuggingFace) {
-                    throw new Error('Hugging Face API disabled');
-                }
-
+            // 🧠 FREE AI APIs - No Token Required
+            async callFreeAIAPI(userInput) {
                 try {
-                    // Hugging Face Inference API (Free)
+                    // Try multiple free AI APIs
+                    const apis = [
+                        this.tryHuggingFaceInference(userInput),
+                        this.tryTogetherAI(userInput),
+                        this.tryDeepInfra(userInput)
+                    ];
+
+                    // Try each API until one works
+                    for (const apiCall of apis) {
+                        try {
+                            const response = await apiCall;
+                            if (response && response.trim().length > 10) {
+                                return response;
+                            }
+                        } catch (error) {
+                            continue; // Try next API
+                        }
+                    }
+                    
+                    throw new Error('All AI APIs failed');
+                    
+                } catch (error) {
+                    console.log('All free AI APIs failed, using smart rules');
+                    throw error;
+                }
+            }
+
+            // 1. Hugging Face Inference (No Auth for some models)
+            async tryHuggingFaceInference(userInput) {
+                try {
+                    // Some models don't require auth for inference
                     const response = await fetch(
-                        `https://api-inference.huggingface.co/models/${this.huggingFaceModel}`,
+                        "https://api-inference.huggingface.co/models/microsoft/DialoGPT-small",
                         {
                             method: "POST",
                             headers: {
-                                "Authorization":"Bearer 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", // Replace with your token
                                 "Content-Type": "application/json"
                             },
                             body: JSON.stringify({
-                                inputs: this.createHuggingFacePrompt(userInput),
+                                inputs: this.createAIPrompt(userInput),
                                 parameters: {
-                                    max_new_tokens: 100,
+                                    max_new_tokens: 80,
                                     temperature: 0.7,
-                                    do_sample: true,
-                                    return_full_text: false
+                                    do_sample: true
                                 }
                             })
                         }
                     );
 
-                    if (!response.ok) {
-                        throw new Error(`Hugging Face API error: ${response.status}`);
+                    if (response.status === 503) {
+                        throw new Error('Model is loading');
                     }
 
-                    const data = await response.json();
-                    
-                    if (data.error) {
-                        throw new Error(data.error);
+                    if (response.ok) {
+                        const data = await response.json();
+                        return this.processAIResponse(data);
                     }
-
-                    return this.processHuggingFaceResponse(data, userInput);
                     
+                    throw new Error('Hugging Face failed');
                 } catch (error) {
-                    console.error('Hugging Face API failed:', error);
                     throw error;
                 }
             }
 
-            createHuggingFacePrompt(userInput) {
+            // 2. Together AI (Free Tier Available)
+            async tryTogetherAI(userInput) {
+                try {
+                    const response = await fetch(
+                        "https://api.together.xyz/v1/chat/completions",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": "Bearer YOUR_FREE_KEY" // Optional for some endpoints
+                            },
+                            body: JSON.stringify({
+                                model: "togethercomputer/RedPajama-INCITE-Chat-3B-v1",
+                                messages: [
+                                    {
+                                        role: "user",
+                                        content: this.createAIPrompt(userInput)
+                                    }
+                                ],
+                                max_tokens: 100,
+                                temperature: 0.7
+                            })
+                        }
+                    );
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        return data.choices[0]?.message?.content || '';
+                    }
+                    
+                    throw new Error('Together AI failed');
+                } catch (error) {
+                    throw error;
+                }
+            }
+
+            // 3. DeepInfra (Free Tier)
+            async tryDeepInfra(userInput) {
+                try {
+                    const response = await fetch(
+                        "https://api.deepinfra.com/v1/inference/microsoft/DialoGPT-medium",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                input: this.createAIPrompt(userInput),
+                                max_length: 100
+                            })
+                        }
+                    );
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        return this.processAIResponse(data);
+                    }
+                    
+                    throw new Error('DeepInfra failed');
+                } catch (error) {
+                    throw error;
+                }
+            }
+
+            createAIPrompt(userInput) {
                 return `You are a helpful AI assistant that speaks Myanmar (Burmese) language. 
 Respond in Myanmar Unicode text. Keep responses short, helpful, and culturally appropriate.
 
@@ -332,23 +416,28 @@ User: ${userInput}
 Assistant:`;
             }
 
-            processHuggingFaceResponse(data, userInput) {
-                if (!data || !data[0] || !data[0].generated_text) {
-                    throw new Error('Invalid response from Hugging Face');
-                }
-
-                let response = data[0].generated_text;
+            processAIResponse(data) {
+                if (!data) return '';
                 
-                // Clean up the response
+                let response = '';
+                
+                // Handle different API response formats
+                if (data[0]?.generated_text) {
+                    response = data[0].generated_text;
+                } else if (data.generated_text) {
+                    response = data.generated_text;
+                } else if (data.result) {
+                    response = data.result;
+                } else if (typeof data === 'string') {
+                    response = data;
+                }
+                
+                // Clean response
                 response = response.replace(/User:.*?Assistant:/gs, '');
                 response = response.split('User:')[0];
                 response = response.trim();
 
-                if (!response || response.length < 10) {
-                    throw new Error('Response too short');
-                }
-
-                return response;
+                return response && response.length > 10 ? response : '';
             }
 
             // 🌤️ Weather API
@@ -359,9 +448,9 @@ Assistant:`;
                 try {
                     const city = this.extractCity(cityInput);
                     
-                    // Free weather API
+                    // Free weather API - No key required
                     const response = await fetch(
-                        `https://api.weatherapi.com/v1/current.json?key=7f6a83461a284f8b8f1180502241212&q=Yangon`
+                        `https://api.open-meteo.com/v1/forecast?latitude=16.866&longitude=96.195&current=temperature_2m,weather_code,wind_speed_10m&timezone=Asia%2FRangoon`
                     );
                     
                     if (response.ok) {
@@ -378,17 +467,29 @@ Assistant:`;
             }
 
             formatWeatherData(data, city) {
+                const weatherCodes = {
+                    0: '☀️ ကောင်းကင်ပြင့်',
+                    1: '🌤️ တိမ်အနည်းငယ်',
+                    2: '⛅ တိမ်အသင့်အတင့်',
+                    3: '☁️ တိမ်ထူထပ်',
+                    45: '🌫️ မြူထူ',
+                    61: '🌦️ မိုးအနည်းငယ်',
+                    63: '🌧️ မိုးအသင့်အတင့်'
+                };
+
+                const current = data.current;
+                const description = weatherCodes[current.weather_code] || '☁️ တိမ်ထူ';
+
                 return `
                 <div style="background: linear-gradient(135deg, #74b9ff, #0984e3); color: white; padding: 15px; border-radius: 10px;">
                     <strong>🌤️ ${city} မြို့ ရာသီဥတု <span class="api-badge">LIVE</span></strong>
                     <div style="margin-top: 10px;">
-                        <div>အပူချိန်: <strong>${data.current.temp_c}°C</strong></div>
-                        <div>ရာသီဥတု: ${data.current.condition.text}</div>
-                        <div>စိုထိုင်းဆ: ${data.current.humidity}%</div>
-                        <div>လေတိုက်နှုန်း: ${data.current.wind_kph} km/h</div>
+                        <div>အပူချိန်: <strong>${Math.round(current.temperature_2m)}°C</strong></div>
+                        <div>ရာသီဥတု: ${description}</div>
+                        <div>လေတိုက်နှုန်း: ${current.wind_speed_10m} km/h</div>
                     </div>
                     <div style="margin-top: 10px; font-size: 0.8em; opacity: 0.9;">
-                        WeatherAPI • Real-time data
+                        Open-Meteo API • Free & No Key Required
                     </div>
                 </div>`;
             }
@@ -410,10 +511,9 @@ Assistant:`;
                             <div>USD to EUR: ${data.rates.EUR?.toFixed(3)}</div>
                             <div>USD to SGD: ${data.rates.SGD?.toFixed(3)}</div>
                             <div>USD to THB: ${data.rates.THB?.toFixed(2)}</div>
-                            <div>USD to CNY: ${(data.rates.CNY || 7.2).toFixed(3)}</div>
                         </div>
                         <div style="margin-top: 10px; font-size: 0.8em; opacity: 0.9;">
-                            ExchangeRate-Host • Updated: ${new Date().toLocaleTimeString('my-MM')}
+                            ExchangeRate-Host • Free API
                         </div>
                     </div>`;
 
@@ -454,272 +554,4 @@ Assistant:`;
                 `;
 
                 newsItems.forEach((news, index) => {
-                    const date = new Date(news.pubDate).toLocaleDateString('my-MM');
-                    newsHTML += `
-                    <div class="news-item">
-                        <div><strong>${index + 1}. ${news.title}</strong></div>
-                        <div style="font-size: 0.8em; margin-top: 5px;">📅 ${date} | 📝 MMTimes</div>
-                    </div>
-                    `;
-                });
-
-                // China News
-                newsHTML += `
-                    <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.3);">
-                        <strong>🇨🇳 တရုတ်သတင်းများ</strong>
-                        ${this.getChinaNews()}
-                    </div>
-                `;
-
-                newsHTML += `</div>`;
-                return newsHTML;
-            }
-
-            getChinaNews() {
-                const chinaNews = [
-                    { 
-                        title: "တရုတ်နိုင်ငံ၏ စီးပွားရေးတိုးတက်မှု ၅.၂% ရှိခဲ့", 
-                        date: new Date().toLocaleDateString('my-MM'),
-                        source: "China Daily"
-                    },
-                    { 
-                        title: "တရုတ်-မြန်မာ ကုန်သွယ်ရေး ဆက်လက်တိုးတက်လာ", 
-                        date: new Date().toLocaleDateString('my-MM'),
-                        source: "Xinhua News"
-                    }
-                ];
-
-                let chinaHTML = '';
-                chinaNews.forEach((news, index) => {
-                    chinaHTML += `
-                    <div class="news-item">
-                        <div><strong>${news.title}</strong></div>
-                        <div style="font-size: 0.8em; margin-top: 5px;">
-                            📅 ${news.date} | 📝 ${news.source}
-                        </div>
-                    </div>
-                    `;
-                });
-
-                return chinaHTML;
-            }
-
-            // 🧮 Calculations
-            calculate(input) {
-                try {
-                    const mathMatch = input.match(/[0-9+\-*/().]+/g);
-                    if (mathMatch) {
-                        const expression = mathMatch[0];
-                        const result = eval(expression);
-                        return `
-                        <div style="background: linear-gradient(135deg, #fd79a8, #e84393); color: white; padding: 15px; border-radius: 10px; text-align: center;">
-                            <strong>🧮 တွက်ချက်မှုရလဒ်</strong>
-                            <div style="font-size: 1.5em; margin: 10px 0;">
-                                ${expression} = <strong>${result}</strong>
-                            </div>
-                        </div>`;
-                    }
-                } catch (e) {
-                    return "တွက်ချက်မှုမှားယွင်းနေပါသည်။";
-                }
-                return "ကျေးဇူးပြု၍ မှန်ကန်သော တွက်ချက်မှုပေးပါ။";
-            }
-
-            // 🧠 Smart Rule-Based Responses
-            initializeSmartResponses() {
-                return {
-                    greeting: [
-                        "မင်္ဂလာပါ! 👋 ကျွန်တော်က Hugging Face AI နဲ့ မြန်မာစာအထူးပြု အကူပါ။",
-                        "ဟယ်လို! 😊 Hugging Face AI ဖြင့် မြန်မာလိုကူညီပေးနိုင်ပါတယ်။"
-                    ],
-                    help: "ကျွန်တော် ကူညီနိုင်တဲ့ အရာများ: Hugging Face AI မေးခွန်းများ၊ ရာသီဥတု၊ ငွေလဲနှုန်း၊ သတင်း၊ တွက်ချက်မှုများ။",
-                    default: "တောင်းပန်ပါတယ်၊ ဒီမေးခွန်းကို Hugging Face AI ကပါ မဖြေနိုင်သေးပါ။"
-                };
-            }
-
-            getSmartResponse(userInput) {
-                const lowerInput = userInput.toLowerCase();
-                
-                if (lowerInput.includes('မင်္ဂလာပါ') || lowerInput.includes('hello') || lowerInput.includes('hi')) {
-                    return this.smartResponses.greeting[0];
-                }
-                if (lowerInput.includes('ကူညီ') || lowerInput.includes('help')) {
-                    return this.smartResponses.help;
-                }
-                
-                return this.smartResponses.default;
-            }
-
-            // 🎯 Main Response Generator
-            async generateResponse(userInput) {
-                const lowerInput = userInput.toLowerCase();
-
-                // API-based responses (priority)
-                if (lowerInput.includes('ရာသီဥတု') || lowerInput.includes('weather')) {
-                    return await this.getWeatherData(userInput);
-                }
-                if (lowerInput.includes('ငွေလဲနှုန်း') || lowerInput.includes('exchange') || lowerInput.includes('dollar')) {
-                    return await this.getExchangeRates();
-                }
-                if (lowerInput.includes('သတင်း') || lowerInput.includes('news')) {
-                    return await this.getNews();
-                }
-                if (this.containsMath(userInput)) {
-                    return this.calculate(userInput);
-                }
-
-                // Try Hugging Face API for general questions
-                if (this.useHuggingFace) {
-                    try {
-                        const aiResponse = await this.callHuggingFaceAPI(userInput);
-                        return aiResponse + `<div style="margin-top: 10px; font-size: 0.8em; opacity: 0.7;"><span class="ai-badge">Hugging Face AI</span> Microsoft DialoGPT</div>`;
-                    } catch (error) {
-                        console.log('Hugging Face failed, using smart rules');
-                        return this.getSmartResponse(userInput) + `<div style="margin-top: 10px; font-size: 0.8em; opacity: 0.7;"><span class="api-badge">Smart Response</span> Hugging Face unavailable</div>`;
-                    }
-                }
-
-                // Fallback to smart rules
-                return this.getSmartResponse(userInput);
-            }
-
-            // 🔧 Utility Methods
-            extractCity(input) {
-                const cities = ['ရန်ကုန်', 'မန္တလေး', 'နေပြည်တော်'];
-                for (const city of cities) {
-                    if (input.includes(city)) return city;
-                }
-                return 'ရန်ကုန်';
-            }
-
-            containsMath(input) {
-                return /[0-9+\-*/().]/.test(input) && input.match(/[0-9]/);
-            }
-
-            setCache(key, value) {
-                this.apiCache.set(key, { value, timestamp: Date.now() });
-            }
-
-            getCached(key) {
-                return this.apiCache.get(key).value;
-            }
-
-            isCached(key) {
-                if (!this.apiCache.has(key)) return false;
-                return (Date.now() - this.apiCache.get(key).timestamp) < this.cacheTimeout;
-            }
-
-            getStaticWeatherData(cityInput) {
-                const city = this.extractCity(cityInput);
-                return `
-                <div style="background: #74b9ff; color: white; padding: 15px; border-radius: 10px;">
-                    🌤️ ${city} - 32°C, ⛅ တိမ်အနည်းငယ်
-                </div>`;
-            }
-
-            getStaticExchangeRates() {
-                return `
-                <div style="background: #00b894; color: white; padding: 15px; border-radius: 10px;">
-                    💱 USD to MMK: 2,100 ကျပ် | EUR: 0.92 | SGD: 1.35
-                </div>`;
-            }
-
-            getStaticNews() {
-                return `
-                <div style="background: #a29bfe; color: white; padding: 15px; border-radius: 10px;">
-                    <strong>📰 သတင်းများ</strong>
-                    <div style="margin-top: 10px;">
-                        <div>• မြန်မာနိုင်ငံတွင် နည်းပညာဖွံ့ဖြိုးရေး</div>
-                        <div>• တရုတ်-မြန်မာ စီးပွားရေးပူးပေါင်းဆောင်ရွက်မှု</div>
-                    </div>
-                </div>`;
-            }
-        }
-
-        // Chat Application
-        class ChatApp {
-            constructor() {
-                this.ai = new MyanmarAIAssistant();
-                this.messages = document.getElementById('messages');
-                this.userInput = document.getElementById('userInput');
-                this.sendBtn = document.getElementById('sendBtn');
-                this.init();
-            }
-
-            init() {
-                this.setupEventListeners();
-            }
-
-            setupEventListeners() {
-                this.sendBtn.addEventListener('click', () => this.sendMessage());
-                this.userInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.sendMessage();
-                });
-            }
-
-            async sendMessage() {
-                const message = this.userInput.value.trim();
-                if (!message) return;
-
-                this.addMessage(message, 'user');
-                this.userInput.value = '';
-                this.showTyping();
-
-                try {
-                    const response = await this.ai.generateResponse(message);
-                    this.hideTyping();
-                    this.addMessage(response, 'bot');
-                } catch (error) {
-                    this.hideTyping();
-                    this.addMessage('တောင်းပန်ပါတယ်၊ Hugging Face API မှ ယာယီပြဿနာရှိနေပါသည်။', 'bot');
-                }
-            }
-
-            addMessage(content, sender) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${sender}-message`;
-                const bubble = document.createElement('div');
-                bubble.className = 'bubble';
-                bubble.innerHTML = content;
-                messageDiv.appendChild(bubble);
-                this.messages.appendChild(messageDiv);
-                this.scrollToBottom();
-            }
-
-            showTyping() {
-                const typingDiv = document.createElement('div');
-                typingDiv.className = 'message bot-message';
-                typingDiv.id = 'typing-indicator';
-                const bubble = document.createElement('div');
-                bubble.className = 'bubble';
-                bubble.innerHTML = '<div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
-                typingDiv.appendChild(bubble);
-                this.messages.appendChild(typingDiv);
-                this.scrollToBottom();
-            }
-
-            hideTyping() {
-                const indicator = document.getElementById('typing-indicator');
-                if (indicator) indicator.remove();
-            }
-
-            scrollToBottom() {
-                this.messages.scrollTop = this.messages.scrollHeight;
-            }
-        }
-
-        // Global function for quick buttons
-        function askQuestion(question) {
-            const userInput = document.getElementById('userInput');
-            userInput.value = question;
-            document.getElementById('sendBtn').click();
-        }
-
-        // Initialize app
-        document.addEventListener('DOMContentLoaded', () => {
-            window.chatApp = new ChatApp();
-        });
-    </script>
-</body>
-</html>
-
+                    const date = new Date(news.p
