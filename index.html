@@ -498,8 +498,157 @@ Assistant:`;
                     return this.calculate(userInput);
                 }
 
-                // Try Local AI for general questions
+        // Try Local AI for general questions
                 if (this.isLocalInitialized) {
                     try {
                         const aiResponse = await this.generateLocalAIResponse(userInput);
-                        return aiResponse + `<div style="margin-
+                        return aiResponse + `<div style="margin-top: 10px; font-size: 0.8em; opacity: 0.7;"><span class="ai-badge">Local AI</span> TinyLlama Model</div>`;
+                    } catch (error) {
+                        console.log('Local AI failed, using fallback');
+                    }
+                }
+
+                // Fallback to rule-based responses
+                return this.getRuleBasedResponse(userInput);
+            }
+
+            containsMath(input) {
+                return /[0-9+\-*/().]/.test(input) && input.match(/[0-9]/);
+            }
+
+            getRuleBasedResponse(input) {
+                const responses = {
+                    greeting: `
+                    <div style="background: linear-gradient(135deg, #ffeaa7, #fab1a0); color: #333; padding: 15px; border-radius: 10px;">
+                        <strong>မင်္ဂလာပါ! 👋</strong><br>
+                        Local AI ဖြင့် မြန်မာလိုပြောဆိုနိုင်ပါသည်။<br>
+                        ရာသီဥတု၊ ငွေလဲနှုန်း၊ သတင်း၊ တွက်ချက်မှုများလည်း မေးမြန်းနိုင်ပါသည်။
+                    </div>
+                    `,
+                    help: `
+                    <div style="background: #dfe6e9; color: #333; padding: 15px; border-radius: 10px;">
+                        <strong>ကူညီမှုစာရင်း 🆘</strong>
+                        <div style="margin-top: 10px;">
+                            • ရာသီဥတု - "ရန်ကုန်ရာသီဥတု"<br>
+                            • ငွေလဲနှုန်း - "ဒေါ်လာငွေလဲနှုန်း"<br>
+                            • သတင်း - "မြန်မာသတင်း"<br>
+                            • တွက်ချက် - "၁၅×၃+၁၀"<br>
+                            • Local AI - မည်သည့်မေးခွန်းမဆို
+                        </div>
+                    </div>
+                    `,
+                    default: `
+                    <div style="background: #b2bec3; color: #333; padding: 15px; border-radius: 10px;">
+                        Local AI ကို ထပ်မံစမ်းသပ်ကြည့်ရန် ကျေးဇူးပြု၍ မေးခွန်းထပ်မေးပါ။<br>
+                        သို့မဟုတ် ရာသီဥတု၊ ငွေလဲနှုန်း၊ သတင်း၊ တွက်ချက်မှုများကို မေးမြန်းပါ။
+                    </div>
+                    `
+                };
+
+                if (input.includes('မင်္ဂလာပါ') || input.includes('hello') || input.includes('hi')) {
+                    return responses.greeting;
+                }
+                if (input.includes('ကူညီ') || input.includes('help')) {
+                    return responses.help;
+                }
+                
+                return responses.default;
+            }
+        }
+
+        // Chat Application
+        class ChatApp {
+            constructor() {
+                this.ai = new MyanmarAIAssistant();
+                this.messages = document.getElementById('messages');
+                this.userInput = document.getElementById('userInput');
+                this.sendBtn = document.getElementById('sendBtn');
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                this.sendBtn.addEventListener('click', () => this.sendMessage());
+                this.userInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
+                });
+            }
+
+            async sendMessage() {
+                const message = this.userInput.value.trim();
+                if (!message) return;
+
+                this.addMessage(message, 'user');
+                this.userInput.value = '';
+                this.showTyping();
+
+                try {
+                    const response = await this.ai.generateResponse(message);
+                    this.hideTyping();
+                    this.addMessage(response, 'bot');
+                } catch (error) {
+                    this.hideTyping();
+                    this.addMessage('တောင်းပန်ပါတယ်၊ ယာယီပြဿနာရှိနေပါသည်။', 'bot');
+                }
+            }
+
+            addMessage(content, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}-message`;
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.innerHTML = content;
+                messageDiv.appendChild(bubble);
+                this.messages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            showTyping() {
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'message bot-message';
+                typingDiv.id = 'typing-indicator';
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.innerHTML = '<div style="display:flex;align-items:center;gap:5px;"><div style="width:8px;height:8px;background:#666;border-radius:50%;animation:bounce 1.4s infinite ease-in-out;"></div><div style="width:8px;height:8px;background:#666;border-radius:50%;animation:bounce 1.4s infinite ease-in-out;animation-delay:-0.16s;"></div><div style="width:8px;height:8px;background:#666;border-radius:50%;animation:bounce 1.4s infinite ease-in-out;animation-delay:-0.32s;"></div></div>';
+                typingDiv.appendChild(bubble);
+                this.messages.appendChild(typingDiv);
+                this.scrollToBottom();
+            }
+
+            hideTyping() {
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) indicator.remove();
+            }
+
+            scrollToBottom() {
+                this.messages.scrollTop = this.messages.scrollHeight;
+            }
+        }
+
+        // Global function for quick buttons
+        function askQuestion(question) {
+            const userInput = document.getElementById('userInput');
+            userInput.value = question;
+            document.getElementById('sendBtn').click();
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            window.chatApp = new ChatApp();
+        });
+
+        // Add CSS animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes bounce {
+                0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+                40% { transform: scale(1); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
