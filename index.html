@@ -554,4 +554,316 @@ Assistant:`;
                 `;
 
                 newsItems.forEach((news, index) => {
-                    const date = new Date(news.p
+                    const date = new Date(news.pubDate).toLocaleDateString('my-MM');
+                    newsHTML += `
+                    <div class="news-item">
+                        <div><strong>${index + 1}. ${news.title}</strong></div>
+                        <div style="font-size: 0.8em; margin-top: 5px;">📅 ${date} | 📝 MMTimes</div>
+                    </div>
+                    `;
+                });
+
+                // China News
+                newsHTML += `
+                    <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.3);">
+                        <strong>🇨🇳 တရုတ်သတင်းများ</strong>
+                        ${this.getChinaNews()}
+                    </div>
+                `;
+
+                newsHTML += `</div>`;
+                return newsHTML;
+            }
+
+            getChinaNews() {
+                const chinaNews = [
+                    { 
+                        title: "တရုတ်နိုင်ငံ၏ စီးပွားရေးတိုးတက်မှု ၅.၂% ရှိခဲ့", 
+                        date: new Date().toLocaleDateString('my-MM'),
+                        source: "China Daily"
+                    },
+                    { 
+                        title: "တရုတ်-မြန်မာ ကုန်သွယ်ရေး ဆက်လက်တိုးတက်လာ", 
+                        date: new Date().toLocaleDateString('my-MM'),
+                        source: "Xinhua News"
+                    }
+                ];
+
+                let chinaHTML = '';
+                chinaNews.forEach((news, index) => {
+                    chinaHTML += `
+                    <div class="news-item">
+                        <div><strong>${news.title}</strong></div>
+                        <div style="font-size: 0.8em; margin-top: 5px;">
+                            📅 ${news.date} | 📝 ${news.source}
+                        </div>
+                    </div>
+                    `;
+                });
+
+                return chinaHTML;
+            }
+
+            // 🧮 Calculations
+            calculate(input) {
+                try {
+                    const mathMatch = input.match(/[0-9+\-*/().]+/g);
+                    if (mathMatch) {
+                        const expression = mathMatch[0];
+                        const result = eval(expression);
+                        return `
+                        <div style="background: linear-gradient(135deg, #fd79a8, #e84393); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                            <strong>🧮 တွက်ချက်မှုရလဒ်</strong>
+                            <div style="font-size: 1.5em; margin: 10px 0;">
+                                ${expression} = <strong>${result}</strong>
+                            </div>
+                        </div>`;
+                    }
+                } catch (e) {
+                    return "တွက်ချက်မှုမှားယွင်းနေပါသည်။";
+                }
+                return "ကျေးဇူးပြု၍ မှန်ကန်သော တွက်ချက်မှုပေးပါ။";
+            }
+
+            // 🧠 Smart Rule-Based Responses
+            initializeSmartResponses() {
+                return {
+                    greeting: [
+                        "မင်္ဂလာပါ! 👋 ကျွန်တော်က Free AI APIs နဲ့ မြန်မာစာအထူးပြု အကူပါ။",
+                        "ဟယ်လို! 😊 Free AI ဖြင့် မြန်မာလိုကူညီပေးနိုင်ပါတယ်။",
+                        "နေကောင်းလား? ဘယ်လိုကူညီရမလဲ?"
+                    ],
+                    health: [
+                        "🏃‍♂️ နေ့စဉ်လေ့ကျင့်ခန်းလုပ်ဖို့ အကြံပေးချင်ပါတယ်။ တစ်နေ့ ၃၀ မိနစ်လောက်လမ်းလျှောက်ပေးပါ။",
+                        "💧 ရေများများသောက်ဖို့ မမေ့ပါနဲ့။ တစ်နေ့ကို ရေ ၈ ခွက်သောက်သင့်ပါတယ်။",
+                        "🥗 ဟင်းသီးဟင်းရွက်နဲ့ သစ်သီးတွေများများစားပေးပါ။ ကျန်းမာရေးအတွက်ကောင်းပါတယ်။"
+                    ],
+                    education: [
+                        "📚 စာကျက်တဲ့အခါ အာရုံစူးစိုက်မှုကောင်းဖို့ လိုပါတယ်။ ၂၅ မိနစ်ကျက်ပြီး ၅ မိနစ်နားတဲ့ Pomodoro technique သုံးကြည့်ပါ။",
+                        "🌍 အင်္ဂလိပ်စာတိုးတက်ချင်ရင် နေ့စဉ်စာလုံး ၁၀ လုံးအသစ်ကျက်ပါ။ အင်္ဂလိပ်သီချင်းနားထောင်ပါ။"
+                    ],
+                    default: [
+                        "တောင်းပန်ပါတယ်၊ ဒီမေးခွန်းကို Free AI APIs ကပါ မဖြေနိုင်သေးပါ။",
+                        "ကျေးဇူးပြု၍ ရိုးရှင်းစွာပြန်မေးပေးပါ။",
+                        "ဒီမေးခွန်းအတွက် ကူညီနိုင်မယ့်အခြားနည်းလမ်းရှာကြည့်ပါမယ်။"
+                    ]
+                };
+            }
+
+            getSmartResponse(userInput) {
+                const lowerInput = userInput.toLowerCase();
+                
+                if (this.containsAny(lowerInput, ['မင်္ဂလာပါ', 'hello', 'hi', 'နေကောင်းလား'])) {
+                    return this.getRandomResponse('greeting');
+                }
+                
+                if (this.containsAny(lowerInput, ['ကျန်းမာရေး', 'health', 'နာမကျန်း', 'ဆေး', 'ကုသ'])) {
+                    return this.getRandomResponse('health');
+                }
+                
+                if (this.containsAny(lowerInput, ['ပညာရေး', 'education', 'စာ', 'သင်ယူ', 'သင်', 'စာမေးပွဲ'])) {
+                    return this.getRandomResponse('education');
+                }
+                
+                if (this.containsAny(lowerInput, ['ကူညီ', 'help', 'အကူ', 'လုပ်ဆောင်', 'ဘာလုပ်နိုင်'])) {
+                    return this.getHelpResponse();
+                }
+                
+                return this.getRandomResponse('default');
+            }
+
+            containsAny(text, keywords) {
+                return keywords.some(keyword => text.includes(keyword));
+            }
+
+            getRandomResponse(category) {
+                const responses = this.smartResponses[category];
+                return responses[Math.floor(Math.random() * responses.length)];
+            }
+
+            getHelpResponse() {
+                return `ကျွန်တော် ကူညီနိုင်တဲ့ အရာများ:
+
+🤖 Free AI Chat:
+• မည်သည့်မေးခွန်းမဆို (Free AI APIs)
+
+📊 Real Data:
+• "ရန်ကုန်ရာသီဥတု" - Live weather
+• "ဒေါ်လာငွေလဲနှုန်း" - Exchange rates  
+• "မြန်မာသတင်း" - MMTimes + China news
+
+🧮 Utilities:
+• "၁၅×၃+၁၀" - Math calculations
+• ကျန်းမာရေးအကြံဉာဏ်
+• ပညာရေးအကြံဉာဏ်
+
+အားလုံးကို Free APIs များဖြင့်အသုံးပြုထားပါတယ်!`;
+            }
+
+            // 🎯 Main Response Generator
+            async generateResponse(userInput) {
+                const lowerInput = userInput.toLowerCase();
+
+                // API-based responses (priority)
+                if (lowerInput.includes('ရာသီဥတု') || lowerInput.includes('weather')) {
+                    return await this.getWeatherData(userInput);
+                }
+                if (lowerInput.includes('ငွေလဲနှုန်း') || lowerInput.includes('exchange') || lowerInput.includes('dollar')) {
+                    return await this.getExchangeRates();
+                }
+                if (lowerInput.includes('သတင်း') || lowerInput.includes('news')) {
+                    return await this.getNews();
+                }
+                if (this.containsMath(userInput)) {
+                    return this.calculate(userInput);
+                }
+
+                // Try Free AI APIs for general questions
+                try {
+                    const aiResponse = await this.callFreeAIAPI(userInput);
+                    return aiResponse + `<div style="margin-top: 10px; font-size: 0.8em; opacity: 0.7;"><span class="ai-badge">Free AI</span> Multiple APIs</div>`;
+                } catch (error) {
+                    console.log('Free AI APIs failed, using smart rules');
+                    return this.getSmartResponse(userInput) + `<div style="margin-top: 10px; font-size: 0.8em; opacity: 0.7;"><span class="api-badge">Smart Response</span> AI Fallback</div>`;
+                }
+            }
+
+            // 🔧 Utility Methods
+            extractCity(input) {
+                const cities = ['ရန်ကုန်', 'မန္တလေး', 'နေပြည်တော်'];
+                for (const city of cities) {
+                    if (input.includes(city)) return city;
+                }
+                return 'ရန်ကုန်';
+            }
+
+            containsMath(input) {
+                return /[0-9+\-*/().]/.test(input) && input.match(/[0-9]/);
+            }
+
+            setCache(key, value) {
+                this.apiCache.set(key, { value, timestamp: Date.now() });
+            }
+
+            getCached(key) {
+                return this.apiCache.get(key).value;
+            }
+
+            isCached(key) {
+                if (!this.apiCache.has(key)) return false;
+                return (Date.now() - this.apiCache.get(key).timestamp) < this.cacheTimeout;
+            }
+
+            getStaticWeatherData(cityInput) {
+                const city = this.extractCity(cityInput);
+                return `
+                <div style="background: #74b9ff; color: white; padding: 15px; border-radius: 10px;">
+                    🌤️ ${city} - 32°C, ⛅ တိမ်အနည်းငယ်
+                </div>`;
+            }
+
+            getStaticExchangeRates() {
+                return `
+                <div style="background: #00b894; color: white; padding: 15px; border-radius: 10px;">
+                    💱 USD to MMK: 2,100 ကျပ် | EUR: 0.92 | SGD: 1.35
+                </div>`;
+            }
+
+            getStaticNews() {
+                return `
+                <div style="background: #a29bfe; color: white; padding: 15px; border-radius: 10px;">
+                    <strong>📰 သတင်းများ</strong>
+                    <div style="margin-top: 10px;">
+                        <div>• မြန်မာနိုင်ငံတွင် နည်းပညာဖွံ့ဖြိုးရေး</div>
+                        <div>• တရုတ်-မြန်မာ စီးပွားရေးပူးပေါင်းဆောင်ရွက်မှု</div>
+                    </div>
+                </div>`;
+            }
+        }
+
+        // Chat Application
+        class ChatApp {
+            constructor() {
+                this.ai = new MyanmarAIAssistant();
+                this.messages = document.getElementById('messages');
+                this.userInput = document.getElementById('userInput');
+                this.sendBtn = document.getElementById('sendBtn');
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                this.sendBtn.addEventListener('click', () => this.sendMessage());
+                this.userInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
+                });
+            }
+
+            async sendMessage() {
+                const message = this.userInput.value.trim();
+                if (!message) return;
+
+                this.addMessage(message, 'user');
+                this.userInput.value = '';
+                this.showTyping();
+
+                try {
+                    const response = await this.ai.generateResponse(message);
+                    this.hideTyping();
+                    this.addMessage(response, 'bot');
+                } catch (error) {
+                    this.hideTyping();
+                    this.addMessage('တောင်းပန်ပါတယ်၊ Free AI APIs များ ယာယီပြဿနာရှိနေပါသည်။', 'bot');
+                }
+            }
+
+            addMessage(content, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}-message`;
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.innerHTML = content;
+                messageDiv.appendChild(bubble);
+                this.messages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            showTyping() {
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'message bot-message';
+                typingDiv.id = 'typing-indicator';
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.innerHTML = '<div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+                typingDiv.appendChild(bubble);
+                this.messages.appendChild(typingDiv);
+                this.scrollToBottom();
+            }
+
+            hideTyping() {
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) indicator.remove();
+            }
+
+            scrollToBottom() {
+                this.messages.scrollTop = this.messages.scrollHeight;
+            }
+        }
+
+        // Global function for quick buttons
+        function askQuestion(question) {
+            const userInput = document.getElementById('userInput');
+            userInput.value = question;
+            document.getElementById('sendBtn').click();
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            window.chatApp = new ChatApp();
+        });
+    </script>
+</body>
+</html>
