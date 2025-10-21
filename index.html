@@ -920,4 +920,26 @@ Assistant:`;
             }
 
             hideTyping() {
-              
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) indicator.remove();
+            }
+
+            scrollToBottom() {
+                this.messages.scrollTop = this.messages.scrollHeight;
+            }
+        }
+
+        // Global function for quick buttons
+        function askQuestion(question) {
+            const userInput = document.getElementById('userInput');
+            userInput.value = question;
+            document.getElementById('sendBtn').click();
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            window.chatApp = new ChatApp();
+        });
+    </script>
+</body>
+</html>
