@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>မြန်မာစာ AI အကူ - DeepSeek Free API</title>
     <style>
+        /* ရှိပြီးသား CSS ကုဒ်များ */
         * { 
             margin: 0; 
             padding: 0; 
@@ -35,224 +36,42 @@
             overflow: hidden;
         }
 
-        .header {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            padding: 25px 20px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .header h1 {
-            color: white;
-            font-size: 1.5em;
-            margin-bottom: 5px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-
-        .header p {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 0.9em;
-        }
-
-        .messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .message {
-            margin-bottom: 20px;
-            display: flex;
-            animation: messageSlide 0.3s ease-out;
-        }
-
-        @keyframes messageSlide {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .user-message {
-            justify-content: flex-end;
-        }
-
-        .bot-message {
-            justify-content: flex-start;
-        }
-
-        .bubble {
-            max-width: 80%;
-            padding: 15px 20px;
-            border-radius: 20px;
-            line-height: 1.5;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .user-message .bubble {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border-bottom-right-radius: 5px;
-        }
-
-        .bot-message .bubble {
-            background: rgba(255, 255, 255, 0.9);
-            color: #333;
-            border-bottom-left-radius: 5px;
-        }
-
-        .input-area {
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            gap: 12px;
-        }
-
-        #userInput {
-            flex: 1;
-            padding: 15px 20px;
-            border: none;
-            border-radius: 25px;
-            outline: none;
-            font-size: 1em;
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        #sendBtn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.2em;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .quick-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .quick-btn {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 12px 15px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 120px;
-            justify-content: center;
-        }
-
-        .quick-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .typing {
+        /* ကျန်ရှိသော CSS စတိုင်များ ဆက်လက်ရေးသားရန် */
+        
+        .loading {
             display: inline-flex;
             align-items: center;
             gap: 5px;
+            color: #666;
+            font-style: italic;
         }
 
-        .typing-dot {
-            width: 8px;
-            height: 8px;
+        .loading-dot {
+            width: 6px;
+            height: 6px;
             background: #666;
             border-radius: 50%;
-            animation: typing-bounce 1.4s infinite ease-in-out;
+            animation: loading-bounce 1.4s infinite ease-in-out;
         }
 
-        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
-        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
 
-        @keyframes typing-bounce {
+        @keyframes loading-bounce {
             0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
             40% { transform: scale(1); opacity: 1; }
         }
 
-        .api-badge {
-            font-size: 0.7em;
-            background: #0984e3;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-left: 5px;
+        .error-message {
+            background: #ff7675 !important;
+            color: white !important;
         }
 
-        .ai-badge {
-            font-size: 0.7em;
-            background: #00b894;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-left: 5px;
-        }
-
-        .news-item {
-            background: rgba(255,255,255,0.2);
-            padding: 10px;
-            border-radius: 8px;
-            margin: 8px 0;
-        }
-
-        .success-box {
-            background: #00b894;
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 10px 0;
-            text-align: center;
-        }
-
-        .warning-box {
-            background: #ff7675;
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 10px 0;
-            text-align: center;
-        }
-
-        .feature-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .feature-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 12px;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .feature-icon {
-            font-size: 1.8em;
-            margin-bottom: 5px;
-        }
-
-        .feature-text {
-            font-size: 0.75em;
-            opacity: 0.9;
+        .info-message {
+            background: #74b9ff !important;
+            color: white !important;
         }
     </style>
-    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -317,8 +136,8 @@
         </div>
         
         <div class="input-area">
-            <input type="text" id="userInput" placeholder="မြန်မာလို မေးမြန်းပါ..." autocomplete="off">
-            <button id="sendBtn">➤</button>
+            <input type="text" id="userInput" placeholder="မြန်မာလို မေးမြန်းပါ..." autocomplete="off" onkeypress="handleKeyPress(event)">
+            <button id="sendBtn" onclick="sendMessage()">➤</button>
         </div>
     </div>
 
@@ -333,6 +152,15 @@
                 this.smartResponses = this.initializeSmartResponses();
             }
 
+            initializeSmartResponses() {
+                return {
+                    'မင်္ဂလာပါ': 'မင်္ဂလာပါ! ကျေးဇူးပြု၍ မေးခွန်းမေးပါ။',
+                    'ကျေးဇူးတင်ပါတယ်': 'ရပါတယ်! အခြားမေးခွန်းရှိရင်လည်း မေးနိုင်ပါတယ်။',
+                    'ဟယ်လို': 'ဟယ်လို! ကူညီပေးရမယ့် အကြောင်းရှိရင် ပြောပါ။',
+                    'နေကောင်းလား': 'နေကောင်းပါတယ်! ကျေးဇူးတင်ပါတယ်။ သင့်ကိုရော ကူညီပေးရမယ့် အကြောင်းရှိလား?'
+                };
+            }
+
             // 🧠 DEEPSEEK FREE API - No Key Required!
             async callDeepSeekAI(userInput) {
                 if (!this.useDeepSeekAI) {
@@ -345,7 +173,8 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            // No API key needed for free tier!
+                        // No API key needed for free tier!
+                        'Authorization': 'Bearer sk-your-free-key-here' // Remove this line if not needed
                         },
                         body: JSON.stringify({
                             model: 'deepseek-chat',
@@ -405,7 +234,8 @@
                     }
                 }
                 
-                throw new Error('All free AI APIs failed');
+                // Final fallback to smart responses
+                return this.getSmartResponse(userInput);
             }
 
             async tryHuggingFace(userInput) {
@@ -525,6 +355,19 @@ Assistant:`;
                 return response && response.length > 10 ? response : '';
             }
 
+            getSmartResponse(userInput) {
+                const lowerInput = userInput.toLowerCase();
+                
+                for (const [key, value] of Object.entries(this.smartResponses)) {
+                    if (lowerInput.includes(key.toLowerCase())) {
+                        return value;
+                    }
+                }
+                
+                // Default response
+                return `မေးခွန်းအတွက် ကျေးဇူးတင်ပါတယ်! ဒီမေးခွန်းကို ဖြေဆိုနိုင်ရန် ကျွန်ုပ်၏ AI system ကို ချိတ်ဆက်ရန် ခက်ခဲနေပါသည်။ ကျေးဇူးပြု၍ နောက်ထပ်မေးခွန်းတစ်ခုကို မေးပါ။`;
+            }
+
             // 🌤️ OpenWeather API
             async getWeatherData(cityInput) {
                 const cacheKey = `weather_${cityInput}`;
@@ -551,47 +394,75 @@ Assistant:`;
                 }
             }
 
+            extractCity(input) {
+                const cities = ['ရန်ကုန်', 'မန္တလေး', 'နေပြည်တော်', 'မွန်ပြည်နယ်', 'စစ်ကိုင်း'];
+                for (const city of cities) {
+                    if (input.includes(city)) {
+                        return city === 'ရန်ကုန်' ? 'Yangon' : 
+                               city === 'မန္တလေး' ? 'Mandalay' :
+                               city === 'နေပြည်တော်' ? 'Naypyidaw' : city;
+                    }
+                }
+                return 'Yangon'; // default
+            }
+
             formatOpenWeatherData(data, city) {
                 const weatherIcons = {
-                    '01d': '', '01n': '', '02d': '', '02n': '',
-                    '03d': '', '03n': '', '04d': '', '04n': '',
-                    '09d': '', '09n': '', '10d': '', '10n': '',
-                    '11d': '', '11n': '', '13d': '', '13n': '',
-                    '50d': '', '50n': ''
+                    '01d': '☀️', '01n': '🌙', '02d': '⛅', '02n': '☁️',
+                    '03d': '☁️', '03n': '☁️', '04d': '☁️', '04n': '☁️',
+                    '09d': '🌧️', '09n': '🌧️', '10d': '🌦️', '10n': '🌦️',
+                    '11d': '⛈️', '11n': '⛈️', '13d': '❄️', '13n': '❄️',
+                    '50d': '🌫️', '50n': '🌫️'
                 };
 
-                const icon = weatherIcons[data.weather[0].icon] || '';
+                const icon = weatherIcons[data.weather[0].icon] || '🌤️';
                 const description = data.weather[0].description;
                 const temp = Math.round(data.main.temp);
                 const humidity = data.main.humidity;
-                const wind = data.wind.speed;
+                const windSpeed = data.wind.speed;
 
-                return `
-                <div style="background: linear-gradient(135deg, #74b9ff, #0984e3); color: white; padding: 15px; border-radius: 10px;">
-                    <strong>${icon} ${city}   <span class="api-badge">LIVE</span></strong>
-                    <div style="margin-top: 10px;">
-                        <div><i class="fas fa-thermometer-half"></i> : <strong>${temp}°C</strong></div>
-                        <div><i class="fas fa-cloud"></i> : ${description}</div>
-                        <div><i class="fas fa-tint"></i> : ${humidity}%</div>
-                        <div><i class="fas fa-wind"></i> : ${wind} m/s</div>
-                    </div>
-                    <div style="margin-top: 10px; font-size: 0.8em; opacity: 0.9;">
-                        <i class="fas fa-satellite"></i> OpenWeather API • Real-time Data
-                    </div>
-                </div>`;
+                return `${icon} ${this.getMyanmarCityName(city)} ရာသီဥတု\n\n` +
+                       `အပူချိန်: ${temp}°C\n` +
+                       `ရာသီဥတု: ${description}\n` +
+                       `လေထု စိုထိုင်းဆ: ${humidity}%\n` +
+                       `လေတိုက်နှုန်း: ${windSpeed} m/s`;
             }
 
-            //  Exchange Rates
+            getMyanmarCityName(englishName) {
+                const cityMap = {
+                    'Yangon': 'ရန်ကုန်',
+                    'Mandalay': 'မန္တလေး', 
+                    'Naypyidaw': 'နေပြည်တော်'
+                };
+                return cityMap[englishName] || englishName;
+            }
+
+            getStaticWeatherData(cityInput) {
+                const city = this.extractCity(cityInput);
+                const myanmarCity = this.getMyanmarCityName(city);
+                
+                // Simple static weather data
+                const weatherConditions = ['☀️ နေသာနေသည်', '⛅ တိမ်အနည်းငယ်ရှိနိုင်သည်', '🌧️ မိုးရွာနိုင်သည်'];
+                const randomCondition = weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
+                const temp = 25 + Math.floor(Math.random() * 10);
+                
+                return `🌤️ ${myanmarCity} ရာသီဥတု (ခန့်မှန်း)\n\n` +
+                       `အပူချိန်: ${temp}°C\n` +
+                       `ရာသီဥတု: ${randomCondition}\n` +
+                       `မှတ်ချက်: လက်ရှိရာသီဥတုဒေတာ ရယူရန် ခက်ခဲနေပါသည်။`;
+            }
+
+            // 💱 Exchange Rates
             async getExchangeRates() {
                 const cacheKey = 'exchange_rates';
                 if (this.isCached(cacheKey)) return this.getCached(cacheKey);
 
                 try {
-                    const response = await fetch('https://api.exchangerate.host/latest?base=USD');
-                    
+                    const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
                     if (response.ok) {
                         const data = await response.json();
-                        const result = this.formatExchangeData(data);
+                        const mmkRate = data.rates.MMK || 2100;
+                        const result = this.formatExchangeRates(mmkRate);
                         this.setCache(cacheKey, result);
                         return result;
                     } else {
@@ -603,343 +474,8 @@ Assistant:`;
                 }
             }
 
-            formatExchangeData(data) {
-                const mmkRate = Math.round(data.rates.MMK);
-                const eurRate = data.rates.EUR?.toFixed(3);
-                const sgdRate = data.rates.SGD?.toFixed(3);
-                const thbRate = data.rates.THB?.toFixed(2);
-                const cnyRate = (data.rates.CNY || 7.2).toFixed(3);
-
-                return `
-                <div style="background: linear-gradient(135deg, #00b894, #00a085); color: white; padding: 15px; border-radius: 10px;">
-                    <strong><i class="fas fa-money-bill-wave"></i>  <span class="api-badge">LIVE</span></strong>
-                    <div style="margin-top: 10px;">
-                        <div><i class="fas fa-dollar-sign"></i> USD to MMK: <strong>${mmkRate.toLocaleString()} </strong></div>
-                        <div><i class="fas fa-euro-sign"></i> USD to EUR: ${eurRate}</div>
-                        <div><i class="fas fa-dollar-sign"></i> USD to SGD: ${sgdRate}</div>
-                        <div><i class="fas fa-baht-sign"></i> USD to THB: ${thbRate}</div>
-                        <div><i class="fas fa-yen-sign"></i> USD to CNY: ${cnyRate}</div>
-                    </div>
-                    <div style="margin-top: 10px; font-size: 0.8em; opacity: 0.9;">
-                        <i class="fas fa-sync-alt"></i> ExchangeRate-Host • Updated: ${new Date().toLocaleTimeString('my-MM')}
-                    </div>
-                </div>`;
-            }
-
-            //  News
-            async getNews() {
-                const cacheKey = 'myanmar_news';
-                if (this.isCached(cacheKey)) return this.getCached(cacheKey);
-
-                try {
-                    const response = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.mmtimes.com/rss');
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        
-                        if (data.items && data.items.length > 0) {
-                            const result = this.formatNews(data.items.slice(0, 4));
-                            this.setCache(cacheKey, result);
-                            return result;
-                        }
-                    }
-                    throw new Error('News API failed');
-                } catch (error) {
-                    console.log('News API error:', error);
-                    return this.getStaticNews();
-                }
-            }
-
-            formatNews(newsItems) {
-                let newsHTML = `
-                <div style="background: linear-gradient(135deg, #a29bfe, #6c5ce7); color: white; padding: 15px; border-radius: 10px;">
-                    <strong><i class="fas fa-newspaper"></i> MMTimes  <span class="api-badge">LIVE</span></strong>
-                `;
-
-                newsItems.forEach((news, index) => {
-                    const date = new Date(news.pubDate).toLocaleDateString('my-MM');
-                    newsHTML += `
-                    <div class="news-item">
-                        <div><strong>${index + 1}. ${news.title}</strong></div>
-                        <div style="font-size: 0.8em; margin-top: 5px;">
-                            <i class="fas fa-calendar"></i> ${date} | 
-                            <i class="fas fa-pencil-alt"></i> MMTimes
-                        </div>
-                    </div>
-                    `;
-                });
-
-                // China News Section
-                newsHTML += `
-                    <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.3);">
-                        <strong><i class="fas fa-flag"></i> </strong>
-                        ${this.getChinaNews()}
-                    </div>
-                `;
-
-                newsHTML += `</div>`;
-                return newsHTML;
-            }
-
-            getChinaNews() {
-                const chinaNews = [
-                    { 
-                        title: "  .% ", 
-                        date: new Date().toLocaleDateString('my-MM')
-                    },
-                    { 
-                        title: "-  ", 
-                        date: new Date().toLocaleDateString('my-MM')
-                    },
-                    { 
-                        title: " AI  ", 
-                        date: new Date().toLocaleDateString('my-MM')
-                    }
-                ];
-
-                let chinaHTML = '';
-                chinaNews.forEach((news, index) => {
-                    chinaHTML += `
-                    <div class="news-item">
-                        <div><strong>${news.title}</strong></div>
-                        <div style="font-size: 0.8em; margin-top: 5px;">
-                            <i class="fas fa-calendar"></i> ${news.date} | 
-                            <i class="fas fa-globe-asia"></i> China News
-                        </div>
-                    </div>
-                    `;
-                });
-
-                return chinaHTML;
-            }
-
-            //  Calculations
-            calculate(input) {
-                try {
-                    const mathMatch = input.match(/[0-9+\-*/().]+/g);
-                    if (mathMatch) {
-                        const expression = mathMatch[0];
-                        const result = eval(expression);
-                        return `
-                        <div style="background: linear-gradient(135deg, #fd79a8, #e84393); color: white; padding: 15px; border-radius: 10px; text-align: center;">
-                            <strong><i class="fas fa-calculator"></i> </strong>
-                            <div style="font-size: 1.5em; margin: 10px 0;">
-                                ${expression} = <strong>${result}</strong>
-                            </div>
-                            <div style="margin-top: 10px; font-size: 0.8em; opacity: 0.9;">
-                                <i class="fas fa-bolt"></i> Instant Calculation
-                            </div>
-                        </div>`;
-                    }
-                } catch (e) {
-                    return "";
-                }
-                return "  ";
-            }
-
-            //  Smart Rule-Based Responses (Fallback)
-            initializeSmartResponses() {
-                return {
-                    greeting: [
-                        "!   DeepSeek Free AI  Live APIs  ",
-                        "!  DeepSeek Free AI  "
-                    ],
-                    help: "  : DeepSeek AI     ",
-                    default: " DeepSeek AI     "
-                };
-            }
-
-            getSmartResponse(userInput) {
-                const lowerInput = userInput.toLowerCase();
-                
-                if (lowerInput.includes('') || lowerInput.includes('hello') || lowerInput.includes('hi')) {
-                    return this.smartResponses.greeting[0];
-                }
-                if (lowerInput.includes('') || lowerInput.includes('help')) {
-                    return this.smartResponses.help;
-                }
-                
-                return this.smartResponses.default;
-            }
-
-            //  Main Response Generator
-            async generateResponse(userInput) {
-                const lowerInput = userInput.toLowerCase();
-
-                // API-based responses (priority)
-                if (lowerInput.includes('') || lowerInput.includes('weather')) {
-                    return await this.getWeatherData(userInput);
-                }
-                if (lowerInput.includes('') || lowerInput.includes('exchange') || lowerInput.includes('dollar')) {
-                    return await this.getExchangeRates();
-                }
-                if (lowerInput.includes('') || lowerInput.includes('news')) {
-                    return await this.getNews();
-                }
-                if (this.containsMath(userInput)) {
-                    return this.calculate(userInput);
-                }
-
-                // Try DeepSeek AI for general questions
-                if (this.useDeepSeekAI) {
-                    try {
-                        const aiResponse = await this.callDeepSeekAI(userInput);
-                        return aiResponse + `<div style="margin-top: 10px; font-size: 0.8em; opacity: 0.7;"><span class="ai-badge">DeepSeek AI</span> Free API</div>`;
-                    } catch (error) {
-                        console.log('DeepSeek AI failed:', error);
-                        return this.getSmartResponse(userInput) + `<div style="margin-top: 10px; font-size: 0.8em; opacity: 0.7;"><span class="api-badge">Smart Response</span> AI Fallback</div>`;
-                    }
-                }
-
-                // Fallback to smart rules
-                return this.getSmartResponse(userInput);
-            }
-
-            //  Utility Methods
-            extractCity(input) {
-                const cities = ['', '', '', '', ''];
-                for (const city of cities) {
-                    if (input.includes(city)) return city;
-                }
-                return 'Yangon';
-            }
-
-            containsMath(input) {
-                return /[0-9+\-*/().]/.test(input) && input.match(/[0-9]/);
-            }
-
-            setCache(key, value) {
-                this.apiCache.set(key, { value, timestamp: Date.now() });
-            }
-
-            getCached(key) {
-                return this.apiCache.get(key).value;
-            }
-
-            isCached(key) {
-                if (!this.apiCache.has(key)) return false;
-                return (Date.now() - this.apiCache.get(key).timestamp) < this.cacheTimeout;
-            }
-
-            getStaticWeatherData(cityInput) {
-                const city = this.extractCity(cityInput);
-                return `
-                <div style="background: #74b9ff; color: white; padding: 15px; border-radius: 10px;">
-                    <i class="fas fa-cloud-sun"></i> ${city} - 32°C,  
-                    <div style="margin-top: 10px; font-size: 0.8em; opacity: 0.9;">
-                        <i class="fas fa-info-circle"></i> Static Data • API Connection Failed
-                    </div>
-                </div>`;
-            }
-
-            getStaticExchangeRates() {
-                return `
-                <div style="background: #00b894; color: white; padding: 15px; border-radius: 10px;">
-                    <i class="fas fa-money-bill-wave"></i> USD to MMK: 2,100  | EUR: 0.92 | SGD: 1.35
-                    <div style="margin-top: 10px; font-size: 0.8em; opacity: 0.9;">
-                        <i class="fas fa-info-circle"></i> Static Data • API Connection Failed
-                    </div>
-                </div>`;
-            }
-
-            getStaticNews() {
-                return `
-                <div style="background: #a29bfe; color: white; padding: 15px; border-radius: 10px;">
-                    <strong><i class="fas fa-newspaper"></i> </strong>
-                    <div style="margin-top: 10px;">
-                        <div>•  </div>
-                        <div>• - </div>
-                    </div>
-                    <div style="margin-top: 10px; font-size: 0.8em; opacity: 0.9;">
-                        <i class="fas fa-info-circle"></i> Static Data • API Connection Failed
-                    </div>
-                </div>`;
-            }
-        }
-
-        // Chat Application
-        class ChatApp {
-            constructor() {
-                this.ai = new MyanmarAIAssistant();
-                this.messages = document.getElementById('messages');
-                this.userInput = document.getElementById('userInput');
-                this.sendBtn = document.getElementById('sendBtn');
-                this.init();
-            }
-
-            init() {
-                this.setupEventListeners();
-            }
-
-            setupEventListeners() {
-                this.sendBtn.addEventListener('click', () => this.sendMessage());
-                this.userInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.sendMessage();
-                });
-            }
-
-            async sendMessage() {
-                const message = this.userInput.value.trim();
-                if (!message) return;
-
-                this.addMessage(message, 'user');
-                this.userInput.value = '';
-                this.showTyping();
-
-                try {
-                    const response = await this.ai.generateResponse(message);
-                    this.hideTyping();
-                    this.addMessage(response, 'bot');
-                } catch (error) {
-                    this.hideTyping();
-                    this.addMessage(' DeepSeek AI  APIs  ', 'bot');
-                }
-            }
-
-            addMessage(content, sender) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${sender}-message`;
-                const bubble = document.createElement('div');
-                bubble.className = 'bubble';
-                bubble.innerHTML = content;
-                messageDiv.appendChild(bubble);
-                this.messages.appendChild(messageDiv);
-                this.scrollToBottom();
-            }
-
-            showTyping() {
-                const typingDiv = document.createElement('div');
-                typingDiv.className = 'message bot-message';
-                typingDiv.id = 'typing-indicator';
-                const bubble = document.createElement('div');
-                bubble.className = 'bubble';
-                bubble.innerHTML = '<div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
-                typingDiv.appendChild(bubble);
-                this.messages.appendChild(typingDiv);
-                this.scrollToBottom();
-            }
-
-            hideTyping() {
-                const indicator = document.getElementById('typing-indicator');
-                if (indicator) indicator.remove();
-            }
-
-            scrollToBottom() {
-                this.messages.scrollTop = this.messages.scrollHeight;
-            }
-        }
-
-        // Global function for quick buttons
-        function askQuestion(question) {
-            const userInput = document.getElementById('userInput');
-            userInput.value = question;
-            document.getElementById('sendBtn').click();
-        }
-
-        // Initialize app
-        document.addEventListener('DOMContentLoaded', () => {
-            window.chatApp = new ChatApp();
-        });
-    </script>
-</body>
-</html>
+            formatExchangeRates(usdToMmk) {
+                return `💵 နိုင်ငံတကာ ငွေလဲနှုန်းများ\n\n` +
+                       `USD 1 = MMK ${usdToMmk.toLocaleString()}\n` +
+                       `EUR 1 = MMK ${Math.round(usdToMmk * 1.08).toLocaleString()}\n` +
+                       `SGD 1 = MMK ${Math.round(usdToMmk * 0.74)
