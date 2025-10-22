@@ -478,4 +478,146 @@ Assistant:`;
                 return `💵 နိုင်ငံတကာ ငွေလဲနှုန်းများ\n\n` +
                        `USD 1 = MMK ${usdToMmk.toLocaleString()}\n` +
                        `EUR 1 = MMK ${Math.round(usdToMmk * 1.08).toLocaleString()}\n` +
-                       `SGD 1 = MMK ${Math.round(usdToMmk * 0.74)
+                       `SGD 1 = MMK ${Math.round(usdToMmk * 0.74).toLocaleString()}\n` +
+                       `THB 1 = MMK ${Math.round(usdToMmk * 0.028).toLocaleString()}\n\n` +
+                       `မှတ်ချက်: ငွေလဲနှုန်းများသည် ခန့်မှန်းခြေသာဖြစ်ပါသည်။`;
+            }
+
+            getStaticExchangeRates() {
+                return `💵 ငွေလဲနှုန်းများ (ခန့်မှန်း)\n\n` +
+                       `USD 1 = MMK 2,100 - 2,300\n` +
+                       `EUR 1 = MMK 2,300 - 2,500\n` +
+                       `SGD 1 = MMK 1,500 - 1,600\n` +
+                       `THB 1 = MMK 60 - 65\n\n` +
+                       `မှတ်ချက်: လက်ရှိငွေလဲနှုန်းများ ရယူရန် ခက်ခဲနေပါသည်။`;
+            }
+
+            // 📰 News
+            async getNews() {
+                return `📰 နောက်ဆုံးရ မြန်မာသတင်းများ\n\n` +
+                       `• နည်းပညာကဏ္ဍ တိုးတက်မှုများ ရှိနေ\n` +
+                       `• ပညာရေးစနစ် ခေတ်မီလာနေ\n` +
+                       `• AI နည်းပညာ မြန်မာနိုင်ငံတွင် စတင်အသုံးပြုလာ\n\n` +
+                       `မှတ်ချက်: Live news feed ကို ချိတ်ဆက်ရန် ခက်ခဲနေပါသည်။`;
+            }
+
+            // Cache management
+            isCached(key) {
+                const cached = this.apiCache.get(key);
+                if (!cached) return false;
+                if (Date.now() - cached.timestamp > this.cacheTimeout) {
+                    this.apiCache.delete(key);
+                    return false;
+                }
+                return true;
+            }
+
+            getCached(key) {
+                return this.apiCache.get(key).data;
+            }
+
+            setCache(key, data) {
+                this.apiCache.set(key, {
+                    data: data,
+                    timestamp: Date.now()
+                });
+            }
+
+            // Main processing function
+            async processMessage(userInput) {
+                const lowerInput = userInput.toLowerCase();
+
+                // Check for specific commands
+                if (lowerInput.includes('ရာသီဥတု') || lowerInput.includes('weather')) {
+                    return await this.getWeatherData(userInput);
+                } else if (lowerInput.includes('ငွေလဲနှုန်း') || lowerInput.includes('exchange') || lowerInput.includes('ဒေါ်လာ')) {
+                    return await this.getExchangeRates();
+                } else if (lowerInput.includes('သတင်း') || lowerInput.includes('news')) {
+                    return await this.getNews();
+                } else {
+                    // Use AI for other queries
+                    return await this.callDeepSeekAI(userInput);
+                }
+            }
+        }
+
+        // Global instance
+        const myanmarAI = new MyanmarAIAssistant();
+
+        // DOM manipulation functions
+        function addMessage(message, isUser = false) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'bubble';
+            bubbleDiv.innerHTML = message;
+            
+            messageDiv.appendChild(bubbleDiv);
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot-message';
+            messageDiv.id = 'typing-indicator';
+            
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'bubble';
+            bubbleDiv.innerHTML = '<div class="loading"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div> AI စဉ်းစားနေသည်...</div>';
+            
+            messageDiv.appendChild(bubbleDiv);
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        async function sendMessage() {
+            const userInput = document.getElementById('userInput').value.trim();
+            if (!userInput) return;
+
+            // Clear input
+            document.getElementById('userInput').value = '';
+            
+            // Add user message
+            addMessage(userInput, true);
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            try {
+                // Process message
+                const response = await myanmarAI.processMessage(userInput);
+                hideTypingIndicator();
+                addMessage(response);
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage(`❌ တောင်းပန်ပါသည်! အချက်အလက်ရယူရာတွင် ပြဿနာတစ်ခုရှိနေပါသည်။<br><small>Error: ${error.message}</small>`);
+            }
+        }
+
+        function askQuestion(question) {
+            document.getElementById('userInput').value = question;
+            sendMessage();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Initialize
+        document.getElementById('userInput').focus();
+    </script>
+</body>
+</html>
